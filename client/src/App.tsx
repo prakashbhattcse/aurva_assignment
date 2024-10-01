@@ -4,12 +4,12 @@ import axios from 'axios';
 import { FaUtensils, FaList, FaInfoCircle, FaTag, FaYoutube } from 'react-icons/fa';
 import 'reactflow/dist/style.css';
 import './App.css';
-import { Link } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid'; 
 
 const initialNodes = [
   { id: '1', data: { label: 'Explore', icon: <FaUtensils className="text-blue-600" /> }, position: { x: 250, y: 50 } }
 ];
-const initialEdges = [];
+const initialEdges: any[] | (() => any[]) = [];
 
 const App: React.FC = () => {
   const [nodes, setNodes] = useState(initialNodes);
@@ -36,7 +36,7 @@ const App: React.FC = () => {
 
   const handleExploreClick = async () => {
     const categories = await fetchCategories();
-    const categoryNodes = categories.map((cat, index) => ({
+    const categoryNodes = categories.map((cat: { strCategory: any; }, index: number) => ({
       id: `cat-${index}`,
       data: { label: cat.strCategory, icon: <FaList className="text-green-600" /> },
       position: { x: 250, y: 100 + index * 50 },
@@ -58,18 +58,27 @@ const App: React.FC = () => {
 
   const handleViewMealsClick = async (category: string) => {
     const meals = await fetchMeals(category);
-    const mealNodes = meals.map((meal, index) => ({
+    const mealNodes = meals.map((meal: { idMeal: any; strMeal: any; }, index: number) => ({
       id: `meal-${meal.idMeal}`,
       data: { label: meal.strMeal, icon: <FaUtensils className="text-orange-600" /> },
       position: { x: 650, y: 100 + index * 50 },
     }));
 
     setNodes((nds) => nds.concat(mealNodes));
-    setEdges((eds) => addEdge({ source: `cat-${category}`, target: `view-meals-${category}`, animated: true }, eds));
+    setEdges((eds) => 
+      addEdge(
+        {
+          id: uuidv4(), // Generate a unique ID for the edge
+          source: `cat-${category}`, 
+          target: `view-meals-${category}`, 
+          animated: true 
+        }, 
+        eds
+      )
+    );
   };
 
   const handleMealClick = async (mealId: string) => {
-    const details = await fetchMealDetails(mealId);
     const mealOptions = [
       {
         id: `view-details-${mealId}`,
@@ -114,7 +123,7 @@ const App: React.FC = () => {
     setShowIngredients(false);
   };
 
-  const handleNodeClick = (event: any, node: any) => {
+  const handleNodeClick = (_event: any, node: any) => {
     if (node.id === '1') {
       handleExploreClick();
     } else if (node.id.startsWith('cat-')) {
@@ -182,7 +191,7 @@ const App: React.FC = () => {
             <div className="mt-4">
               <h4 className="text-lg font-semibold text-gray-700">Tags:</h4>
               <div className="flex flex-wrap mt-2">
-                {mealDetails.strTags.split(',').map((tag, index) => (
+                {mealDetails.strTags.split(',').map((tag: string, index: React.Key | null | undefined) => (
                   <button key={index} className="bg-blue-500 text-white rounded-full px-4 py-1 m-1">
                     {tag.trim()}
                   </button>
